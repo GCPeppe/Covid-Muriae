@@ -26,49 +26,41 @@ conteudo = page_soup.body.div.text.split()
 
 for n, palavra in enumerate(conteudo):
     if palavra == 'Epidemiológico':
-        data = conteudo.index(palavra)
-        string = conteudo[data + 2][0:10]
+        string = conteudo[n + 2][0:10]
         d_type = datetime.strptime(string, '%d/%m/%Y')
         datas.append(d_type)
-        conteudo.pop(data)
+        conteudo.pop(n)
     elif palavra == 'Epidemiológico-':
-        data = conteudo.index(palavra)
-        string = conteudo[data + 1][0:10]
+        string = conteudo[n + 1][0:10]
         d_type = datetime.strptime(string, '%d/%m/%Y')
         datas.append(d_type)
-        conteudo.pop(data)
-    elif 'Boletim' in conteudo[n] and conteudo[n + 1] == '-':
-        data = conteudo.index(palavra)
-        string = conteudo[data + 2][0:5:] + '/2021'
+        conteudo.pop(n)
+    elif ('Boletim' in conteudo[n] and conteudo[n + 1] == '-') \
+            or (conteudo[n] == 'Covid' and conteudo[n + 1] == '-'):
+        string = conteudo[n + 2][0:5:] + '/2021'
         d_type = datetime.strptime(string, '%d/%m/%Y')
         datas.append(d_type)
-        conteudo.pop(data)
-    elif palavra == 'confirmados:':
-        confirmados = conteudo.index(palavra)
-        inteiro = int(conteudo[confirmados + 1].replace('.', ''))
+        conteudo.pop(n)
+    elif (palavra == 'confirmados:') or (palavra == 'covid-19:'):
+        inteiro = int(conteudo[n + 1].replace('.', ''))
         conf.append(inteiro)
-        conteudo.pop(confirmados)
-    elif palavra == 'covid-19:':
-        confirmados = conteudo.index(palavra)
-        inteiro = int(conteudo[confirmados + 1].replace('.', ''))
-        conf.append(inteiro)
-        conteudo.pop(confirmados)
+        conteudo.pop(n)
     elif palavra == 'ativos:':
-        ativos = conteudo.index(palavra)
-        ativ.append(int(conteudo[ativos + 1].replace('Pacientes', '')))
-        conteudo.pop(ativos)
+        ativ.append(int(conteudo[n + 1].replace('Pacientes', '')))
+        conteudo.pop(n)
     elif 'Óbitos:' in palavra:
-        obitos = conteudo.index(palavra)
-        obt.append(int(conteudo[obitos + 1].replace('Investigados', '')))
-        conteudo.pop(obitos)
-    elif palavra == 'dose:':
-        dose = conteudo.index(palavra)
-        dose1.append(int(conteudo[dose + 1].replace('Vacinados', '').replace('.', '')))
-        conteudo.pop(dose)
-    elif palavra == 'doses:':
-        dose = conteudo.index(palavra)
-        dose2.append(int(conteudo[dose + 1].replace('PACIENTESTotal', '').replace('.', '')))
-        conteudo.pop(dose)
+        obt.append(int(conteudo[n + 1].replace('Investigados', '')))
+        conteudo.pop(n)
+    elif ('Primeira' in conteudo[n] and conteudo[n + 1] == 'dose:') or \
+            (conteudo[n] == 'uma' and conteudo[n + 1] == 'dose:'):
+        dose1.append(int(conteudo[n + 2].replace('Vacinados', '').replace('.', '')))
+        conteudo.pop(n)
+    elif palavra == 'doses:' or palavra == 'única:':
+        dose2.append(int(conteudo[n + 1].replace('PACIENTESTotal', '').replace('.', '')))
+        conteudo.pop(n)
+    elif 'Segunda' in conteudo[n] and conteudo[n + 1] == 'dose:':
+        dose2.append(int(conteudo[n + 2].replace('.', '')))
+        conteudo.pop(n)
     else:
         pass
 
@@ -106,9 +98,9 @@ c = 1
 nao_zero = int()
 while True:
 
-    for i, row in enumerate(joined.values):
-        if row[c] != 0:
-            nao_zero = row[c]
+    for i, value in enumerate(joined.iloc[:, c]):
+        if value != 0:
+            nao_zero = value
         else:
             if joined.loc[i, joined.columns[0]] != hoje.date():
                 joined.loc[i, joined.columns[c]] = nao_zero
@@ -123,31 +115,35 @@ while True:
 joined['Casos Diários'] = joined['Casos Totais'].diff().fillna(0).astype('int')
 joined['Óbitos Diários'] = joined['Óbitos'].diff().fillna(0).astype('int')
 
-pd.set_option('display.max_rows', len(joined.values))
 pd.set_option('display.max_columns', len(joined.columns))
 
-print(joined)
+plt.rcParams.update({'figure.facecolor': '#92b69e'})
+plt.rcParams['axes.linewidth'] = 0.1
 
-
-# joined.to_csv('C:/Users/GCPeppe/Documents/covid-muriae-auto.csv', encoding='latin-1', sep=';')
 
 def plotar_casosVSimun(save=False, show=True):
     from numpy import max
     plt.figure(figsize=(1080 / 600, 1080 / 600), dpi=600)
-    plt.plot(joined['Data'], joined['Dose 1'], color='green', linewidth=0.5, label='Dose 1 da Vacina')
-    plt.plot(joined['Data'], joined['Dose 2'], color='green', linewidth=0.5, label='Dose 2 da Vacina')
+    ax = plt.axes()
+    ax.set(facecolor='#c6e2ff')
+    plt.plot(joined['Data'], joined['Dose 1'], color='#8dae56', linewidth=0.5, label='Dose 1 da Vacina')
+    plt.plot(joined['Data'], joined['Dose 2'], color='green', linewidth=0.5, label='Dose 2 e dose única da Vacina')
     plt.plot(joined['Data'], joined['Casos Totais'], color='blue', linewidth=0.5, label='Casos Totais')
     plt.subplots_adjust(top=0.86, bottom=0.1, left=0.15, right=0.96)
     plt.xticks(joined['Data'][::60], fontsize=2.5, rotation=20, y=0.04)
-    plt.yticks(range(0, max(dose1), 1000), fontsize=3, x=0.03)
-    plt.ylabel('População', fontsize=6, labelpad=0.1)
+    plt.xlim(min(joined['Data']), max(joined['Data']))
+    plt.ylim(0, max(joined['Dose 1']))
+    plt.yticks(range(0, max(dose1), 3000), fontsize=3, x=0.03)
+    plt.ylabel('Doses', fontsize=6, labelpad=0.9)
     plt.legend(loc='upper left', fontsize=2)
     plt.title('Casos Totais vs Doses aplicadas em Muriaé \n'
               'segundo os boletins epidemiológicos da \n'
               'Prefeitura de Muriaé', fontsize=4, y=0.96)
 
     if save:
+
         plt.savefig('C:/Users/GCPeppe/Pictures/ativos-vs-imunizados.png', dpi=600)
+
     else:
         pass
 
@@ -158,10 +154,13 @@ def plotar_casosVSimun(save=False, show=True):
 
 
 def plotar_casosAtivos(save=False, show=True):
-    from numpy import max
+    from numpy import max, min
 
     plt.figure(figsize=(1080 / 600, 1080 / 600), dpi=600)
+    ax = plt.axes()
+    ax.set(facecolor='#c6e2ff')
     plt.plot(joined['Data'], joined['Casos Ativos'], color='orange', linewidth=0.5)
+    plt.xlim(min(joined['Data']), max(joined['Data']) + timedelta(days=1))
     plt.subplots_adjust(top=0.86, bottom=0.1, left=0.15, right=0.96)
     plt.yticks(range(0, max(joined['Casos Ativos']), 45), fontsize=3, x=0.03)
     plt.xticks(joined['Data'][::60], fontsize=2.5, rotation=20, y=0.04)
@@ -187,9 +186,12 @@ def plotar_obitos(save=False, show=True):
     from numpy import max
 
     plt.figure(figsize=(1080 / 600, 1080 / 600), dpi=600)
+    ax = plt.axes()
+    ax.set(facecolor='#c6e2ff')
     plt.bar(joined['Data'], joined['Óbitos Diários'], color='red', width=1)
     plt.subplots_adjust(top=0.86, bottom=0.1, left=0.15, right=0.96)
     plt.yticks(range(0, max(joined['Óbitos Diários']) + 1), fontsize=3, x=0.02)
+    plt.xlim(min(joined['Data']), max(joined['Data']) + timedelta(days=1))
     plt.xticks(joined['Data'][::60], fontsize=2.5, rotation=20, y=0.04)
     plt.ylabel('Óbitos Diários', fontsize=6, labelpad=0.48)
     plt.title(
@@ -213,10 +215,13 @@ def plotar_casos_diarios(save=False, show=True):
     from numpy import max
 
     plt.figure(figsize=(1080 / 600, 1080 / 600), dpi=600)
+    ax = plt.axes()
+    ax.set(facecolor='#c6e2ff')
     plt.bar(joined['Data'], joined['Casos Diários'], color='blue', width=1)
     plt.subplots_adjust(top=0.86, bottom=0.1, left=0.15, right=0.96)
     plt.yticks(range(0, max(joined['Casos Diários']), 20), fontsize=3, x=0.02)
     plt.xticks(joined['Data'][::60], fontsize=2.5, rotation=20, y=0.04)
+    plt.xlim(min(joined['Data']), max(joined['Data']) + timedelta(days=1))
     plt.ylabel('Casos Diários', fontsize=6, labelpad=0.48)
     plt.title(
         'Casos Diários de COVID-19 em Muriaé \n '
@@ -235,7 +240,33 @@ def plotar_casos_diarios(save=False, show=True):
         pass
 
 
-plotar_casosAtivos(save=True)
-plotar_casosVSimun(save=True)
-plotar_obitos(save=True)
-plotar_casos_diarios(save=True)
+def relacao_ativosObtos(save=False, show=True):
+    plt.figure(figsize=(12, 12))
+    ax = plt.axes()
+    ax.set(facecolor='#c6e2ff')
+    plt.bar(joined['Data'], joined['Óbitos Diários'], color='red')
+    plt.ylabel('Óbitos diários', fontsize=16)
+    plt.yticks(fontsize=14)
+    ax2 = plt.gca().twinx()
+    plt.ylabel('Casos Ativos', fontsize=16)
+    plt.yticks(fontsize=14)
+    plt.xlim(min(joined['Data']), max(joined['Data']) + timedelta(days=1))
+    plt.plot(joined['Data'], joined['Casos Ativos'], color='blue')
+
+    if save:
+        plt.savefig('C:/Users/GCPeppe/Pictures/casos_obitos.png')
+    else:
+        pass
+
+    if show:
+        plt.show()
+    else:
+        pass
+
+
+print(joined.tail())
+
+#plotar_casosAtivos(save=True)
+#plotar_casosVSimun(save=True)
+#plotar_obitos(save=True)
+#plotar_casos_diarios(save=True)

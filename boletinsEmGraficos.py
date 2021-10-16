@@ -108,7 +108,7 @@ pd.set_option('display.max_rows', len(df2))
 
 joined = pd.merge(df2, df, on='Data', how='left').fillna(0)
 
-joined[['Dose 1', 'Dose 2', 'Casos Totais', 'Casos Ativos', 'Óbitos']] =     joined[['Dose 1', 'Dose 2', 'Casos Totais', 'Casos Ativos', 'Óbitos']].astype('int')
+joined[['Dose 1', 'Dose 2', 'Casos Totais', 'Casos Ativos', 'Óbitos']] = joined[['Dose 1', 'Dose 2', 'Casos Totais', 'Casos Ativos', 'Óbitos']].astype('int')
 
 # transformando os dados zeros em dados do dia anterior
 
@@ -171,7 +171,7 @@ def plotar_casosVSimun(save=False, show=True):
     plt.tight_layout()
     if save:
         
-        plt.savefig('C:/Users/GCPeppe/Pictures/ativos-vs-imunizados.png')
+        plt.savefig('')
         
     else:
         pass
@@ -201,7 +201,7 @@ def plotar_casosAtivos(save=False, show=True):
     )
 
     if save:
-        plt.savefig('C:/Users/GCPeppe/Pictures/casos_ativos.png', dpi=600)
+        plt.savefig('')
     else:
         pass
 
@@ -230,7 +230,7 @@ def plotar_obitos(save=False, show=True):
     )
 
     if save:
-        plt.savefig('C:/Users/GCPeppe/Pictures/covid_obitos.png', dpi=600)
+        plt.savefig('')
     else:
         pass
 
@@ -259,7 +259,7 @@ def plotar_casos_diarios(save=False, show=True):
     )
 
     if save:
-        plt.savefig('C:/Users/GCPeppe/Pictures/casos_diarios.png', dpi=600)
+        plt.savefig('')
     else:
         pass
 
@@ -282,7 +282,7 @@ def relacao_ativosObtos(save=False, show=True):
     plt.plot(joined['Data'], joined['Casos Ativos'], color='blue')
 
     if save:
-        plt.savefig('C:/Users/GCPeppe/Pictures/casos_obitos.png')
+        plt.savefig('')
     else:
         pass
 
@@ -296,7 +296,7 @@ def relacao_ativosObtos(save=False, show=True):
 # In[7]:
 
 
-joined.to_csv('C:/Users/GCPeppe/Documents/covid-muriae-auto.csv', encoding='utf-8', sep=';')
+joined.to_csv('')
 
 
 # In[8]:
@@ -335,39 +335,3 @@ plotar_casos_diarios(save=True)
 
 relacao_ativosObtos(save=True)
 
-from Google import Create_service 
-    
-FILE = 'client_secret_GoogleCloudDemo.json'
-API_NAME = 'drive'
-API_VERSION = 'v3'
-SCOPES = ['https://www.googleapis./auth/drive']
-
-service = Create_Service(FILE, API_NAME, API_VERSION, SCOPES)
-
-folder_id = '1r6363ZH-r7S6HcJlXOSIq9wA5biKoMen'
-file_names = [
-        'ativos-vs-imunizados.png',
-        'casos_ativos.png', 
-        'casos_diarios.png',
-        'covid_obitos.png'
-                ]
-file_types = [
-        'image/png',
-        'image/png',
-        'image/png',
-        'image/png'
-    ]
-    
-for file_name, file_type in zip(file_names, file_types):
-    metadata = {
-        'name': file_name,
-        'parents': [folder_id]
-    }
-
-    media = MediaFileUpload('C:/Users/GCPeppe/Pictures/{0}'.format(file_name), mimetype=file_type)
-    
-    service.files().create(
-        body=metadata,
-        media_body=media,
-        fields='id'
-    ).execute()

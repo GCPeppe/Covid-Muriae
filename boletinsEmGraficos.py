@@ -84,7 +84,8 @@ datas
 
 
 # In[4]:
-
+#a prefeitura apaga os boletins de tempos em tempos, por isso um backup em csv
+# deve ser concatenado com os dados mais recentes puxados
 
 bkup = pd.read_csv('covid-muriae-auto.csv', sep=';', encoding='Latin1')
 

@@ -172,7 +172,7 @@ def plotar_casosVSimun(save=False, show=True):
     plt.tight_layout()
     if save:
         
-        plt.savefig('')
+        plt.savefig('casosVSimunizados.png')
         
     else:
         pass
@@ -202,7 +202,7 @@ def plotar_casosAtivos(save=False, show=True):
     )
 
     if save:
-        plt.savefig('')
+        plt.savefig('casos_ativos.png')
     else:
         pass
 
@@ -231,7 +231,7 @@ def plotar_obitos(save=False, show=True):
     )
 
     if save:
-        plt.savefig('')
+        plt.savefig('obitos.png')
     else:
         pass
 
@@ -260,7 +260,7 @@ def plotar_casos_diarios(save=False, show=True):
     )
 
     if save:
-        plt.savefig('')
+        plt.savefig('casos_diarios.png')
     else:
         pass
 
@@ -283,7 +283,7 @@ def relacao_ativosObtos(save=False, show=True):
     plt.plot(joined['Data'], joined['Casos Ativos'], color='blue')
 
     if save:
-        plt.savefig('')
+        plt.savefig('casos_ativos_obtos.png')
     else:
         pass
 
